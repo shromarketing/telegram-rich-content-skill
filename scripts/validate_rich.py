@@ -38,6 +38,106 @@ ALLOWED_NAMED_ENTITIES = {
     "rdquo",
 }
 
+# Telegram Bot API 10.3 Rich HTML allowlist. Keeping this explicit is safer than
+# silently accepting browser HTML that Telegram may reject (or that may hide an
+# unsafe link). Update it together with references/formatting.md and tests.
+ALLOWED_ATTRIBUTES: dict[str, set[str]] = {
+    "a": {"href", "name"},
+    "audio": {"src", "tg-spoiler"},
+    "blockquote": {"expandable"},
+    "code": {"class"},
+    "details": {"open"},
+    "img": {"src", "alt", "tg-spoiler"},
+    "input": {"type", "checked"},
+    "li": {"value"},
+    "ol": {"start", "type", "reversed"},
+    "table": {"bordered", "striped", "compact"},
+    "td": {"colspan", "rowspan", "align", "valign"},
+    "tg-button": {
+        "type",
+        "style",
+        "url",
+        "data",
+        "forward-text",
+        "request-write-access",
+        "query",
+        "allow-user-chats",
+        "allow-bot-chats",
+        "allow-group-chats",
+        "allow-channel-chats",
+        "text",
+    },
+    "tg-button-row": {"align"},
+    "tg-document": {"src", "tg-spoiler"},
+    "tg-emoji": {"emoji-id"},
+    "tg-map": {"lat", "long", "zoom", "width", "height"},
+    "tg-reference": {"name"},
+    "tg-time": {"unix", "format"},
+    "th": {"colspan", "rowspan", "align", "valign"},
+    "video": {"src", "tg-spoiler"},
+}
+ALLOWED_TAGS = {
+    "a",
+    "aside",
+    "audio",
+    "b",
+    "blockquote",
+    "br",
+    "caption",
+    "cite",
+    "code",
+    "del",
+    "details",
+    "em",
+    "figcaption",
+    "figure",
+    "footer",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "hr",
+    "i",
+    "img",
+    "input",
+    "ins",
+    "li",
+    "mark",
+    "ol",
+    "p",
+    "pre",
+    "s",
+    "strike",
+    "strong",
+    "sub",
+    "summary",
+    "sup",
+    "table",
+    "td",
+    "tg-button",
+    "tg-button-row",
+    "tg-collage",
+    "tg-document",
+    "tg-emoji",
+    "tg-map",
+    "tg-math",
+    "tg-math-block",
+    "tg-reference",
+    "tg-slideshow",
+    "tg-spoiler",
+    "tg-time",
+    "tg-thinking",
+    "th",
+    "tr",
+    "u",
+    "ul",
+    "video",
+}
+DRAFT_ONLY_TAGS = {"tg-thinking"}
+SAFE_URL_SCHEMES = {"http", "https", "mailto", "tg"}
+
 BLOCK_TAGS = {
     "h1",
     "h2",
@@ -67,7 +167,7 @@ BLOCK_TAGS = {
     "video",
     "audio",
 }
-VOID_TAGS = {"hr", "img", "input", "tg-map"}
+VOID_TAGS = {"br", "hr", "img", "input", "tg-map"}
 
 
 @dataclass(frozen=True)
@@ -92,8 +192,9 @@ class ValidationResult:
 
 
 class RichHTMLMetrics(HTMLParser):
-    def __init__(self) -> None:
+    def __init__(self, *, allow_draft_tags: bool = False) -> None:
         super().__init__(convert_charrefs=False)
+        self.allow_draft_tags = allow_draft_tags
         self.stack: list[str] = []
         self.errors: list[str] = []
         self.blocks = 0
@@ -103,6 +204,28 @@ class RichHTMLMetrics(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
+        if tag not in ALLOWED_TAGS:
+            self.errors.append(f"unsupported Rich HTML tag: <{tag}>")
+        if tag in DRAFT_ONLY_TAGS and not self.allow_draft_tags:
+            self.errors.append(f"draft-only tag <{tag}> requires --allow-draft-tags")
+
+        allowed = ALLOWED_ATTRIBUTES.get(tag, set())
+        seen: set[str] = set()
+        for raw_name, value in attrs:
+            name = raw_name.lower()
+            if name in seen:
+                self.errors.append(f"duplicate attribute {name!r} on <{tag}>")
+            seen.add(name)
+            if name.startswith("on") or name == "style":
+                self.errors.append(f"unsafe attribute {name!r} on <{tag}>")
+            elif name not in allowed:
+                self.errors.append(f"unsupported attribute {name!r} on <{tag}>")
+            if name in {"href", "src", "url"} and value:
+                parsed = urlparse(value)
+                internal_anchor = name == "href" and value.startswith("#")
+                if not internal_anchor and parsed.scheme.lower() not in SAFE_URL_SCHEMES:
+                    self.errors.append(f"unsafe or unsupported URL scheme in {name!r} on <{tag}>")
+
         if tag in BLOCK_TAGS:
             self.blocks += 1
         if tag == "tr":
@@ -115,9 +238,7 @@ class RichHTMLMetrics(HTMLParser):
                 self.errors.append(f"invalid colspan={raw!r}")
                 colspan = 1
             self.current_row_columns += colspan
-            self.max_table_columns = max(
-                self.max_table_columns, self.current_row_columns
-            )
+            self.max_table_columns = max(self.max_table_columns, self.current_row_columns)
 
         if tag not in VOID_TAGS:
             self.stack.append(tag)
@@ -137,9 +258,7 @@ class RichHTMLMetrics(HTMLParser):
             self.errors.append(f"closing tag </{tag}> has no opener")
             return
         if self.stack[-1] != tag:
-            self.errors.append(
-                f"closing tag </{tag}> does not match <{self.stack[-1]}>"
-            )
+            self.errors.append(f"closing tag </{tag}> does not match <{self.stack[-1]}>")
             if tag in self.stack:
                 while self.stack and self.stack[-1] != tag:
                     self.stack.pop()
@@ -174,21 +293,20 @@ def parse_media_spec(value: str, *, kind: str | None = None) -> MediaSpec:
 
 
 def validate_rich(
-    markup: str, media: list[MediaSpec] | None = None
+    markup: str,
+    media: list[MediaSpec] | None = None,
+    *,
+    allow_draft_tags: bool = False,
 ) -> ValidationResult:
     media = media or []
     result = ValidationResult(text_chars=len(markup), media_count=len(media))
 
     if len(markup) > MAX_TEXT_CHARS:
-        result.errors.append(
-            f"text has {len(markup)} characters; limit is {MAX_TEXT_CHARS}"
-        )
+        result.errors.append(f"text has {len(markup)} characters; limit is {MAX_TEXT_CHARS}")
     if len(media) > MAX_MEDIA:
-        result.errors.append(
-            f"declared media count is {len(media)}; limit is {MAX_MEDIA}"
-        )
+        result.errors.append(f"declared media count is {len(media)}; limit is {MAX_MEDIA}")
 
-    parser = RichHTMLMetrics()
+    parser = RichHTMLMetrics(allow_draft_tags=allow_draft_tags)
     try:
         parser.feed(markup)
         parser.close()
@@ -199,9 +317,7 @@ def validate_rich(
     result.errors.extend(parser.errors)
 
     if parser.blocks > MAX_BLOCKS:
-        result.errors.append(
-            f"estimated block count is {parser.blocks}; limit is {MAX_BLOCKS}"
-        )
+        result.errors.append(f"estimated block count is {parser.blocks}; limit is {MAX_BLOCKS}")
     if parser.max_nesting > MAX_NESTING:
         result.errors.append(f"nesting is {parser.max_nesting}; limit is {MAX_NESTING}")
     if parser.max_table_columns > MAX_TABLE_COLUMNS:
@@ -209,17 +325,12 @@ def validate_rich(
             f"table row has {parser.max_table_columns} columns; limit is {MAX_TABLE_COLUMNS}"
         )
 
-    invalid_entities = sorted(
-        set(NAMED_ENTITY_RE.findall(markup)) - ALLOWED_NAMED_ENTITIES
-    )
+    invalid_entities = sorted(set(NAMED_ENTITY_RE.findall(markup)) - ALLOWED_NAMED_ENTITIES)
     if invalid_entities:
-        result.errors.append(
-            f"unsupported named HTML entities: {', '.join(invalid_entities)}"
-        )
+        result.errors.append(f"unsupported named HTML entities: {', '.join(invalid_entities)}")
 
     references = [
-        (match.group("kind"), match.group("id"))
-        for match in MEDIA_REF_RE.finditer(markup)
+        (match.group("kind"), match.group("id")) for match in MEDIA_REF_RE.finditer(markup)
     ]
     referenced_ids = {media_id for _, media_id in references}
     declared_ids = [item.media_id for item in media]
@@ -232,9 +343,7 @@ def validate_rich(
     missing = sorted(referenced_ids - declared_set)
     unused = sorted(declared_set - referenced_ids)
     if missing:
-        result.errors.append(
-            f"markup references undeclared media IDs: {', '.join(missing)}"
-        )
+        result.errors.append(f"markup references undeclared media IDs: {', '.join(missing)}")
     if unused:
         result.errors.append(f"declared media IDs are unused: {', '.join(unused)}")
 
@@ -251,16 +360,12 @@ def validate_rich(
             )
 
     if not references and media:
-        result.warnings.append(
-            "media was declared but no tg:// media references were found"
-        )
+        result.warnings.append("media was declared but no tg:// media references were found")
     return result
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Validate Telegram Rich HTML without sending"
-    )
+    parser = argparse.ArgumentParser(description="Validate Telegram Rich HTML without sending")
     parser.add_argument("markup", type=Path, help="UTF-8 Rich HTML file")
     parser.add_argument(
         "--media",
@@ -268,6 +373,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="ID=PATH_OR_URL",
         help="declare media referenced by tg://...; repeat as needed",
+    )
+    parser.add_argument(
+        "--allow-draft-tags",
+        action="store_true",
+        help="allow draft-only tags such as <tg-thinking>",
     )
     return parser
 
@@ -284,7 +394,7 @@ def main() -> int:
         return 2
 
     markup = args.markup.read_text(encoding="utf-8").strip()
-    result = validate_rich(markup, media)
+    result = validate_rich(markup, media, allow_draft_tags=args.allow_draft_tags)
     for warning in result.warnings:
         print(f"WARNING: {warning}")
     if not result.ok:

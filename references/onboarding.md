@@ -41,6 +41,17 @@ Label weak inferences as hypotheses and ask the user to correct them. A voice pr
 4. Run a natural-language pass: remove generic AI openings, repetitive conclusions, unsupported certainty, and decorative formatting.
 5. Explain any intentional deviation when clarity, accuracy, platform limits, or legal risk requires it.
 
+Optionally copy `assets/style-check.template.json` into the user's project and encode a
+small set of objective guardrails. Run:
+
+```bash
+python scripts/check_voice.py post-plain.md --profile style-check.json
+```
+
+The checker reports named rules such as banned phrases, sentence length, paragraph
+length, emoji count, and CTA presence. It does not measure taste, authenticity, or a
+person's identity, and its PASS result is never a substitute for human editorial review.
+
 Do not imitate a third party in a deceptive way. For a brand or team voice, define shared observable characteristics instead of pretending to be a named person.
 
 ## Recommended optional connections

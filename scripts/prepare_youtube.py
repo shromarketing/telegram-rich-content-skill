@@ -23,15 +23,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("url", type=public_url)
     parser.add_argument("--output-dir", type=Path, default=Path("output/youtube"))
-    parser.add_argument(
-        "--thumbnail", action="store_true", help="write original thumbnail"
-    )
-    parser.add_argument(
-        "--captions", action="store_true", help="write manual and auto captions"
-    )
-    parser.add_argument(
-        "--audio", action="store_true", help="extract compressed MP3 audio"
-    )
+    parser.add_argument("--thumbnail", action="store_true", help="write original thumbnail")
+    parser.add_argument("--captions", action="store_true", help="write manual and auto captions")
+    parser.add_argument("--audio", action="store_true", help="extract compressed MP3 audio")
     parser.add_argument(
         "--language",
         default="ru.*,en.*",
@@ -93,8 +87,7 @@ def main() -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     command = build_command(args)
     print(
-        "Preparing public assets without cookies or playlist expansion. "
-        f"Output: {args.output_dir}"
+        f"Preparing public assets without cookies or playlist expansion. Output: {args.output_dir}"
     )
     try:
         completed = subprocess.run(command, check=False)

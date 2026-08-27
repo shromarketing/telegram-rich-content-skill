@@ -27,18 +27,10 @@ def build_parser() -> argparse.ArgumentParser:
         description="Validate or explicitly publish Telegram Rich HTML"
     )
     parser.add_argument("markup", type=Path, help="UTF-8 Rich HTML file")
-    parser.add_argument(
-        "--photo", action="append", default=[], type=typed_media("photo")
-    )
-    parser.add_argument(
-        "--video", action="append", default=[], type=typed_media("video")
-    )
-    parser.add_argument(
-        "--audio", action="append", default=[], type=typed_media("audio")
-    )
-    parser.add_argument(
-        "--document", action="append", default=[], type=typed_media("document")
-    )
+    parser.add_argument("--photo", action="append", default=[], type=typed_media("photo"))
+    parser.add_argument("--video", action="append", default=[], type=typed_media("video"))
+    parser.add_argument("--audio", action="append", default=[], type=typed_media("audio"))
+    parser.add_argument("--document", action="append", default=[], type=typed_media("document"))
     parser.add_argument(
         "--environment",
         choices=("test", "production"),
@@ -106,10 +98,7 @@ async def send(args: argparse.Namespace, markup: str, media: list[MediaSpec]) ->
 
     rich = InputRichMessage(
         html=markup,
-        media=[
-            InputRichMessageMedia(id=item.media_id, media=input_media(item))
-            for item in media
-        ],
+        media=[InputRichMessageMedia(id=item.media_id, media=input_media(item)) for item in media],
     )
     bot = Bot(token)
     try:
@@ -136,14 +125,9 @@ def main() -> int:
         for error in result.errors:
             print(f"ERROR: {error}", file=sys.stderr)
         return 1
-    print(
-        f"VALID: {result.text_chars} chars, {result.blocks} blocks, "
-        f"{result.media_count} media."
-    )
+    print(f"VALID: {result.text_chars} chars, {result.blocks} blocks, {result.media_count} media.")
     if not args.send:
-        print(
-            "Nothing sent. Add --send and exact --confirm-target only after approval."
-        )
+        print("Nothing sent. Add --send and exact --confirm-target only after approval.")
         return 0
     try:
         asyncio.run(send(args, markup, media))

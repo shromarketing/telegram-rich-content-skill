@@ -26,7 +26,10 @@ For agent-generated editorial posts, Rich HTML is usually the most predictable c
 - 50 media attachments;
 - 20 table columns.
 
-The local validator catches common structural errors but the official Telegram API remains authoritative.
+The local validator uses an explicit Bot API 10.3 allowlist for tags and attributes,
+rejects event handlers, inline styles, unsafe URL schemes, malformed nesting, and media
+mapping errors. Draft-only `<tg-thinking>` requires `--allow-draft-tags`. The official
+Telegram API remains authoritative.
 
 ## Inline HTML
 
@@ -46,7 +49,8 @@ Supported inline forms include:
 <a href="https://example.com">link</a>
 ```
 
-Use only tags documented by Telegram. Unknown tags may be ignored or rejected.
+Use only tags documented by Telegram. `scripts/validate_rich.py` rejects unknown tags
+before any network call.
 
 ## Blocks
 

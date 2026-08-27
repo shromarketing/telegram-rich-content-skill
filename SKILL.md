@@ -1,6 +1,6 @@
 ---
 name: telegram-rich-content
-description: "Turn a raw thought, voice note, article, document, interview, podcast, or video into a structured Telegram post in the user's tone of voice; validate and safely publish Telegram Rich Messages when requested. Use for Telegram copywriting, content repurposing, onboarding a channel voice, BotFather setup, YouTube assets, or local transcription."
+description: "Turn ideas, audio, articles, documents, or videos into source-grounded Telegram posts in an approved voice; validate, preview, and safely publish plain, album, or Rich Message formats."
 ---
 
 # Telegram Rich Content
@@ -25,6 +25,8 @@ Do not assume that rich formatting or a bot is required. Read [references/workfl
 
 For mode-specific extraction rules, read [references/source-modes.md](references/source-modes.md). For YouTube assets and local transcription, read [references/youtube-workflow.md](references/youtube-workflow.md).
 
+For multi-step work, create an auditable package with `scripts/init_material.py`. Keep source, transcript, evidence map, brief, voice profile reference, both post variants, media, and validation report together.
+
 ## First-use onboarding and voice
 
 When no editorial profile exists, read [references/onboarding.md](references/onboarding.md). Offer a short setup and create a project-local voice profile from [assets/voice-profile.template.md](assets/voice-profile.template.md) only with the user's approval.
@@ -33,11 +35,14 @@ Do not block an urgent draft on optional onboarding. State reasonable assumption
 
 Treat the voice profile as editable evidence, not a personality diagnosis. Learn from 3–5 user-approved examples when available. Do not reveal private profiles in the post or impersonate a third party.
 
+Use `scripts/check_voice.py` only for explainable editorial guardrails. Never present its result as an objective voice, quality, or personality score.
+
 ## Safety boundary
 
 - Treat bot tokens, private chat IDs, cookies, voice profiles, and unpublished source material as sensitive.
 - Keep Telegram secrets only in a local `.env` excluded from Git. Never paste them into prompts, screenshots, commits, or logs.
 - Local transcription uses `faster-whisper`; it requires no paid API key. Model files download on first use unless a local model path is supplied.
+- Optional Apple Silicon acceleration uses `mlx-whisper`; keep `faster-whisper` as the portable default.
 - Default to validation and a private test channel. A successful test is not permission to publish to production.
 - Before creating a bot, adding it as an administrator, changing channel rights, sending a post, or downloading protected media, obtain explicit authorization for that action.
 - Grant the bot only **Post Messages** unless the user has a separate need.
@@ -52,6 +57,7 @@ Treat the voice profile as editable evidence, not a personality diagnosis. Learn
 - Supported Rich HTML/Markdown and media IDs: [references/formatting.md](references/formatting.md).
 - YouTube thumbnails, captions, audio, and free local transcription: [references/youtube-workflow.md](references/youtube-workflow.md).
 - End-to-end production and acceptance: [references/workflow.md](references/workflow.md).
+- Installation health check: `python scripts/doctor.py`; add `--telegram` only for explicit read-only API diagnostics.
 - Telegram, YouTube, or transcription errors: [references/troubleshooting.md](references/troubleshooting.md).
 
 ## Required working pattern
@@ -62,9 +68,10 @@ Treat the voice profile as editable evidence, not a personality diagnosis. Learn
 4. Load the approved voice profile and examples when provided. Preserve meaning over stylistic imitation.
 5. Propose or create the post with a strong hook, readable structure, appropriate depth, one clear action, and a source/credit footer when needed.
 6. Select normal post, manual Article, album, or Rich Message based on content and audience compatibility.
-7. For Rich HTML, run `scripts/validate_rich.py`. For bot delivery, `scripts/publish_rich.py` validates by default and sends only with `--send` plus an exact `--confirm-target`.
-8. Send to a private test channel only after approval. Review on current Telegram Desktop and mobile and choose an older-client fallback.
-9. Publish to production only after approval of the exact text, media, bot, and target immediately before sending.
+7. For Rich HTML, run `scripts/validate_rich.py`, then optionally create an approximate browser preview with `scripts/preview_rich.py`. The Telegram clients remain authoritative.
+8. For bot delivery, `scripts/publish_rich.py` and `scripts/publish_fallback.py` validate by default and send only with `--send` plus an exact `--confirm-target`.
+9. Send to a private test channel only after approval. Review on current Telegram Desktop and mobile and choose an older-client fallback.
+10. Publish to production only after approval of the exact text, media, bot, and target immediately before sending.
 
 ## Media invariant
 

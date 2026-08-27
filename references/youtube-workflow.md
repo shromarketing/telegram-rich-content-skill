@@ -8,7 +8,7 @@ Use the smallest acquisition step that supplies the needed evidence.
 2. Retrieve the original thumbnail and available creator-provided captions.
 3. Use automatic captions if creator captions are absent and their quality is sufficient.
 4. Download audio only when captions are unavailable or materially incomplete.
-5. Transcribe locally with `faster-whisper`; no paid transcription API is required.
+5. Transcribe locally with `faster-whisper` or optional `mlx-whisper`; no paid transcription API is required.
 6. Download full video only when frame selection or visual analysis truly requires it.
 
 Do not download more data than the task requires.
@@ -51,7 +51,7 @@ python scripts/prepare_youtube.py URL \
 Install the optional dependencies once:
 
 ```bash
-python -m pip install -r requirements-youtube.txt
+python -m pip install -r requirements-youtube.txt -r requirements-transcription.txt
 ```
 
 Balanced default for a typical computer:
@@ -60,7 +60,8 @@ Balanced default for a typical computer:
 python scripts/transcribe_audio.py output/video/source.mp3 \
   --language ru \
   --timestamps \
-  --out output/video/transcript.txt
+  --out output/video/transcript.md \
+  --checkpoint output/video/transcript.progress.jsonl
 ```
 
 The default `small` model is a practical starting point. For a final transcript with enough RAM and time, try `--model large-v3`. For CPU inference, `--device cpu --compute-type int8` usually reduces memory use. For a supported NVIDIA setup, `--device cuda --compute-type float16` is the common fast path.
@@ -76,9 +77,20 @@ python scripts/transcribe_audio.py interview.mp3 \
   --out transcript.txt
 ```
 
+Choose the output by extension or `--format`: `txt`, `md`, `srt`, `vtt`, or `json`.
+Markdown groups nearby segments into roughly 45-second semantic blocks and waits for a
+sentence boundary. Add `--word-timestamps` for word data in JSON/checkpoints. If a long
+run is interrupted, re-run the same command with `--resume` and the same `--checkpoint`;
+every completed segment is flushed to disk.
+
 ### Optional Apple Silicon path
 
-On Apple Silicon, `mlx-whisper` is an optional alternative optimized for the MLX ecosystem. It is not required by this repository and its CLI differs from `scripts/transcribe_audio.py`. Install it in a separate virtual environment and follow the official MLX Whisper instructions. Keep `faster-whisper` as the portable default for Codex and Claude Code installations across operating systems.
+On Apple Silicon, install `requirements-apple-silicon.txt`. The script's `auto` backend
+prefers MLX when installed; force a portable run with `--backend faster-whisper`.
+Checkpoints and resume work with both bundled backends. Speaker diarization is
+intentionally not bundled: reliable diarization is a separate, heavier pipeline and
+often requires gated model terms. Add speaker labels manually or integrate an approved
+diarization stack for your environment.
 
 ## Selecting a frame
 

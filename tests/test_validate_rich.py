@@ -50,6 +50,45 @@ class ValidateRichTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("does not match" in error for error in result.errors))
 
+    def test_unknown_tag_is_rejected(self) -> None:
+        result = validate_rich("<script>alert(1)</script>", [])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("unsupported Rich HTML tag" in error for error in result.errors))
+
+    def test_unknown_attribute_is_rejected(self) -> None:
+        result = validate_rich('<p class="hidden">Text</p>', [])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("unsupported attribute" in error for error in result.errors))
+
+    def test_javascript_url_is_rejected(self) -> None:
+        result = validate_rich('<a href="javascript:alert(1)">Click</a>', [])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("URL scheme" in error for error in result.errors))
+
+    def test_internal_footnote_anchor_is_accepted(self) -> None:
+        result = validate_rich(
+            '<p>Claim<a href="#note-1">[1]</a></p>'
+            '<tg-reference name="note-1">Source</tg-reference>',
+            [],
+        )
+        self.assertTrue(result.ok, result.errors)
+
+    def test_draft_tag_requires_explicit_opt_in(self) -> None:
+        markup = "<tg-thinking>Working</tg-thinking>"
+        self.assertFalse(validate_rich(markup, []).ok)
+        self.assertTrue(validate_rich(markup, [], allow_draft_tags=True).ok)
+
+    def test_current_rich_components_are_accepted(self) -> None:
+        markup = (
+            "<blockquote expandable>Quote</blockquote>"
+            '<table bordered compact><tr><th align="left">A</th>'
+            '<td colspan="2">B</td></tr></table>'
+            '<tg-button-row align="center"><tg-button type="url" '
+            'url="https://example.com">Open</tg-button></tg-button-row>'
+        )
+        result = validate_rich(markup, [])
+        self.assertTrue(result.ok, result.errors)
+
 
 if __name__ == "__main__":
     unittest.main()

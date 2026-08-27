@@ -1,5 +1,14 @@
 # End-to-end workflow
 
+For a reusable or high-stakes material, begin with:
+
+```bash
+python scripts/init_material.py "descriptive material name"
+```
+
+This creates one auditable folder for the source, transcript, evidence map, brief,
+voice-profile reference, plain fallback, Rich HTML, media, and validation report.
+
 ## 1. Establish the editorial brief
 
 Capture what is known:
@@ -56,10 +65,19 @@ Prefer user-owned source media. For YouTube, read `youtube-workflow.md`.
 
 ```bash
 python scripts/validate_rich.py draft.html --media cover=cover.jpg
+python scripts/preview_rich.py draft.html --out preview.html
 python scripts/publish_rich.py draft.html --photo cover=cover.jpg
 ```
 
-Resolve every validation error before a network action.
+The browser preview is deliberately approximate. Resolve every validation error before
+a network action and treat Telegram Desktop/mobile as the rendering authority. For a
+plain or album fallback:
+
+```bash
+python scripts/publish_fallback.py post-plain.md --mode plain
+python scripts/publish_fallback.py album-caption.txt --mode album \
+  --photo p1=first.jpg --photo p2=second.jpg
+```
 
 ## 7. Test in isolation
 

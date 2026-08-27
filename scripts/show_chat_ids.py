@@ -42,9 +42,7 @@ async def run() -> int:
         for message in candidates:
             if message is None:
                 continue
-            title = (
-                message.chat.title or message.chat.username or message.chat.full_name
-            )
+            title = message.chat.title or message.chat.username or message.chat.full_name
             chats[message.chat.id] = (message.chat.type, title or "untitled")
 
     if not chats:

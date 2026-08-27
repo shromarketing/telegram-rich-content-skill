@@ -22,7 +22,46 @@ jobs:
         run: python -m compileall -q scripts tests
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
-      - name: Validate bundled example without network
+      - name: Validate bundled examples without network
         run: >-
           python scripts/validate_rich.py assets/rich-post.example.html
           --media cover=https://example.com/cover.jpg
+      - name: Validate source-to-post showcase
+        run: python scripts/validate_rich.py examples/source-to-post/post-rich.html
+      - name: Exercise workflow tools
+        run: |
+          python scripts/bootstrap.py --features all
+          python scripts/doctor.py --json
+          python scripts/preview_rich.py examples/source-to-post/post-rich.html --out /tmp/preview.html
+          python scripts/check_voice.py examples/source-to-post/post-plain.md --profile examples/source-to-post/style-check.json
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install ruff
+      - run: ruff check .
+      - run: ruff format --check scripts tests
+      - name: Scan tracked files for token-shaped secrets
+        run: |
+          if git grep -nE '[0-9]{8,12}:[A-Za-z0-9_-]{30,}' -- ':!*.md'; then
+            echo 'Token-shaped value found in tracked files.' >&2
+            exit 1
+          fi
+
+  optional-dependency-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install portable feature groups
+        run: python -m pip install -r requirements.txt -r requirements-youtube.txt -r requirements-transcription.txt
+      - name: Import helpers without model download or Telegram access
+        run: |
+          python scripts/doctor.py
+          python -c "import aiogram, dotenv, faster_whisper, yt_dlp"

@@ -1,5 +1,15 @@
 # Troubleshooting
 
+Start with an offline health check:
+
+```bash
+python scripts/doctor.py
+```
+
+It reports installed feature groups and whether environment variable names are
+configured, but never prints their values. Use `--telegram` only when a read-only
+`getMe`/`getChat` network diagnostic is appropriate.
+
 ## `chat not found`
 
 Check in order:
@@ -70,6 +80,10 @@ Install `ffmpeg` and verify `ffmpeg -version`. The YouTube helper can retrieve t
 This is expected. `faster-whisper` downloads the selected model once and reuses its
 local cache. Use `--model-dir` to choose the cache or `--local-model-only` to prohibit
 downloads. The local workflow does not upload audio to a paid transcription API.
+
+For long runs, add `--checkpoint progress.jsonl`. Every completed segment is flushed to
+disk. If the process stops, re-run the same faster-whisper command with `--resume` and
+the same checkpoint. Do not use `--resume` after changing the source audio or model.
 
 ## Transcription is too slow or runs out of memory
 

@@ -1,0 +1,9 @@
+{
+  "max_paragraph_chars": 700,
+  "max_sentence_words": 32,
+  "max_emoji": 6,
+  "require_call_to_action": false,
+  "call_to_action_markers": ["напишите", "сохраните", "поделитесь", "подписывайтесь"],
+  "banned_phrases": ["в современном мире", "давайте разберемся", "уникальная возможность"],
+  "required_phrases": []
+}

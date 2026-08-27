@@ -37,3 +37,14 @@ The optional local transcription helper uses the separately installed `faster-wh
 `faster-whisper` installs CTranslate2, PyAV, and other dependencies with their own
 licenses. Whisper model weights are downloaded separately on first use and remain
 subject to their respective model licenses.
+
+## mlx-whisper
+
+The optional Apple Silicon backend can use the separately installed `mlx-whisper`
+package. It is not vendored into this repository.
+
+- Source: https://github.com/ml-explore/mlx-examples/tree/main/whisper
+- License: MIT
+
+MLX-converted model weights are downloaded separately and remain subject to their model
+licenses.

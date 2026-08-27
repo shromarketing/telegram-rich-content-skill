@@ -1,54 +1,73 @@
+<div align="center">
+
+![Telegram Rich Content — source material becomes a structured, safely published message](assets/showcase/hero.png)
+
 # Telegram Rich Content Skill
 
-**Telegram-копирайтер для Codex и Claude Code: превращает сырую мысль, голосовую, статью, документ или видео в самостоятельный пост в вашем tone of voice — от обычного текста до Rich Message с заголовками, таблицами, раскрывающимися блоками, сносками, коллажами и свайп-каруселью.**
+**Turn a rough idea, voice note, article, document, podcast, or video into a
+source-grounded Telegram post in your approved voice — from plain copy to a true Rich
+Message with headings, tables, expandable sections, footnotes, media, and slideshows.**
 
-Skill помогает агенту:
+[![release](https://img.shields.io/github/v/release/shromarketing/telegram-rich-content-skill?display_name=tag&style=flat-square)](https://github.com/shromarketing/telegram-rich-content-skill/releases)
+[![tests](https://img.shields.io/github/actions/workflow/status/shromarketing/telegram-rich-content-skill/test.yml?branch=main&style=flat-square&label=tests)](https://github.com/shromarketing/telegram-rich-content-skill/actions)
+[![license](https://img.shields.io/github/license/shromarketing/telegram-rich-content-skill?style=flat-square)](LICENSE)
+[![Codex](https://img.shields.io/badge/Codex-skill-111827?style=flat-square)](references/installation.md)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-skill-D97757?style=flat-square)](references/installation.md)
 
-- распаковать наговорённую или написанную мысль, не обедняя смысл;
-- локально расшифровать голосовую, подкаст или видео без платного speech-to-text API;
-- превратить статью или чужое видео в самостоятельный материал со ссылкой и авторством, а не в копию;
-- провести короткий онбординг и работать по вашему редактируемому voice profile;
-- задать только те вопросы, ответы на которые действительно меняют пост;
-- выбрать обычный пост, ручную «Статью», альбом или Telegram Rich Message;
-- получить из YouTube оригинальное превью, субтитры, метаданные или аудио;
-- поднять отдельного бота через BotFather с минимальными правами;
-- проверить rich-разметку офлайн и сначала отправить её в приватный тестовый канал;
-- не унести токен, cookies или приватные исходники в GitHub.
+[Русская версия](README.ru.md) · [60-second setup](#60-second-setup) ·
+[Showcase](docs/SHOWCASE.md) · [Security](docs/SECURITY_MODEL.md)
 
-> Rich Messages появились в Telegram Bot API 10.1. На 27 августа 2026 года актуальна Bot API 10.3, а поддержка `sendRichMessage` есть в `aiogram`. Перед использованием агент должен сверить актуальную [документацию Telegram](https://core.telegram.org/bots/api).
+</div>
 
-## Что можно дать агенту
+## Not another “AI post generator”
 
-```text
-сырая мысль / голосовая / статья / документ / видео / несколько источников
-                                  ↓
-                существенные вопросы и допущения
-                                  ↓
-            факты, позиция автора, таймкоды, медиа
-                                  ↓
-          ваш tone of voice + редакционная структура
-                                  ↓
-         обычный пост / Article / альбом / Rich Message
-                                  ↓
-       локальная проверка → приватный тест → отдельный продакшн-гейт
-```
+Most content tools start at the blank page and stop at generated copy. This skill gives
+Codex or Claude Code a complete editorial workflow:
 
-Skill не обязан делать каждый пост «богатым». Если обычный текст понятнее и совместимее, агент должен выбрать его.
+- start from text, audio, a URL, a document, YouTube, or several sources;
+- transcribe locally with open Whisper runtimes — no paid speech-to-text API;
+- build an evidence map before drafting, so claims stay traceable;
+- onboard your tone of voice from approved examples without inventing a personality
+  profile;
+- choose the lightest useful format: plain post, manual Article, classic album, or Rich
+  Message;
+- validate Telegram Rich HTML against a strict allowlist before any network call;
+- preview locally, test privately, and keep production behind a separate approval gate.
 
-## Быстрая установка
+![Source-to-post workflow](assets/showcase/pipeline.svg)
+
+## Who it is for
+
+- creators and founders who think in voice notes but publish structured long-form posts;
+- editors and content teams turning interviews, articles, and videos into original
+  Telegram materials;
+- agencies that need repeatable, reviewable client workflows;
+- developers experimenting with Telegram Bot API Rich Messages;
+- Codex and Claude Code users who want a reusable editorial agent, not a one-off prompt.
+
+It is not a bulk spammer, a copyright bypass, or an autonomous production publisher.
+
+## What comes in the box
+
+| Capability | What it does | Network by default? |
+|---|---|---|
+| Agent skill | Editorial routing, source grounding, onboarding, safety gates | No |
+| Material package | Source → transcript → evidence → brief → post variants → QA | No |
+| YouTube helper | Public metadata, original thumbnail, captions, or audio via `yt-dlp` | Yes |
+| Local transcription | TXT, Markdown, SRT, VTT, JSON; checkpoints and word timestamps | Model download once |
+| Voice guardrails | Explainable phrase, length, emoji, and CTA checks | No |
+| Rich validator | Tags, attributes, URLs, limits, nesting, entities, media IDs | No |
+| Local preview | Approximate browser rendering for faster iteration | No |
+| Publishers | Rich Message, plain post, or 2–10 item photo/video album | Only with `--send` |
+| Doctor | Installation checks; optional read-only Telegram diagnostics | No unless requested |
+
+## 60-second setup
 
 ### Codex
 
 ```bash
 git clone https://github.com/shromarketing/telegram-rich-content-skill.git \
   ~/.codex/skills/telegram-rich-content
-```
-
-Перезапустите Codex и попросите:
-
-```text
-Используй $telegram-rich-content. Преврати этот материал в подробный пост,
-сохрани мой смысл, проверь разметку, но ничего не публикуй.
 ```
 
 ### Claude Code
@@ -58,138 +77,210 @@ git clone https://github.com/shromarketing/telegram-rich-content-skill.git \
   ~/.claude/skills/telegram-rich-content
 ```
 
-Перезапустите Claude Code и попросите:
+Restart the agent, then try:
 
 ```text
-Use the telegram-rich-content skill to turn this material into a Telegram post
-in my approved voice. Draft and validate it, but do not publish.
+Use $telegram-rich-content. Turn this material into a detailed Telegram post in
+my approved voice. Preserve the evidence, prepare plain and rich variants, validate
+everything, and do not publish.
 ```
 
-Проектная установка и Windows-команды: [references/installation.md](references/installation.md).
+Codex and Claude Code both discover the repository through its root [`SKILL.md`](SKILL.md).
+Project-local installation and Windows commands are in
+[`references/installation.md`](references/installation.md).
 
-## Онбординг: превратить skill в вашего копирайтера
+## Optional tools: install only what you need
 
-Для разовой задачи профиль не обязателен. Для постоянной работы дайте агенту 3–5 одобренных постов и попросите провести короткий онбординг:
-
-```text
-Используй $telegram-rich-content. Проведи короткий онбординг, изучи эти пять
-эталонных постов и подготовь voice-profile.md. Покажи его мне на согласование,
-ничего не публикуй.
-```
-
-Агент зафиксирует наблюдаемые правила: аудиторию, задачу канала, ритм, лексику, прямоту, юмор, форматирование, типичный CTA и антипримеры. Это редактируемый рабочий документ, а не скрытый психологический профиль. Шаблон: [assets/voice-profile.template.md](assets/voice-profile.template.md), полный процесс: [references/onboarding.md](references/onboarding.md).
-
-Полезно также подключить к проекту актуальный файл с продуктами, биографией, ссылками и разрешёнными фактами. Тогда агент сможет быть не только оформителем, но и постоянным редактором: распаковывать идеи, предлагать структуру, проверять утверждения, адаптировать материал под аудиторию и сохранять одобренные паттерны.
-
-## Бесплатная локальная транскрибация
-
-Вместо OpenAI API используется open-source `faster-whisper`. Аудио обрабатывается на компьютере: нет API-ключа, лимита загрузки и оплаты за минуты. При первом запуске выбранная модель скачивается локально.
+Helper scripts require Python 3.11+. Inspect the plan, apply it, and run the doctor
+(replace `python3` with `python3.12`, for example, when the system interpreter is older):
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements-youtube.txt
-
-python scripts/transcribe_audio.py voice-note.m4a \
-  --language ru --timestamps \
-  --out transcript.txt
+python3 scripts/bootstrap.py --features all
+python3 scripts/bootstrap.py --features all --apply
+.venv/bin/python scripts/doctor.py
 ```
 
-По умолчанию используется `small` как практичный баланс. Для финального качества можно выбрать `--model large-v3`; для CPU — `--device cpu --compute-type int8`. На Apple Silicon можно отдельно использовать `mlx-whisper`, но переносимым вариантом skill остаётся `faster-whisper`. Подробнее: [references/youtube-workflow.md](references/youtube-workflow.md).
+Feature groups are `publisher`, `youtube`, `transcription`, and optional Apple Silicon
+`apple`. The installer creates an isolated `.venv`, never overwrites an existing `.env`,
+and does not contact Telegram. Add `--init-env` only when publisher configuration is
+needed. You can also install each `requirements-*.txt` manually.
 
-## YouTube → пост
+## Start from anything useful
 
-Сначала получить оригинальное превью, метаданные и доступные субтитры:
+### A raw thought or voice note
+
+The agent separates thesis from repetition, asks only questions that can change meaning,
+and preserves useful depth instead of blindly shortening the source.
+
+### An article or document
+
+The agent separates source claims from your commentary, keeps links and attribution, and
+creates a transformative post rather than copying the original.
+
+### A YouTube video
 
 ```bash
 python scripts/prepare_youtube.py 'https://youtu.be/VIDEO_ID' \
-  --thumbnail --captions --language 'ru.*,en.*' \
-  --output-dir output/video
+  --thumbnail --captions --language 'ru.*,en.*' --output-dir output/video
 ```
 
-Если субтитров нет, скачать только аудио и расшифровать локально:
+If captions are missing, acquire only audio and transcribe it locally:
 
 ```bash
-python scripts/prepare_youtube.py 'https://youtu.be/VIDEO_ID' \
-  --audio --output-dir output/video
-
+python scripts/prepare_youtube.py URL --audio --output-dir output/video
 python scripts/transcribe_audio.py output/video/VIDEO_ID.mp3 \
-  --language ru --model small --timestamps \
-  --out output/video/transcript.txt
+  --language ru --out output/video/transcript.md \
+  --checkpoint output/video/progress.jsonl
 ```
 
-Для чужого контента skill требует самостоятельный пересказ, ссылку и авторство; он не предназначен для перепубликации полной расшифровки или обхода ограничений доступа.
+Choose `txt`, `md`, `srt`, `vtt`, or `json`. `faster-whisper` is portable; optional
+`mlx-whisper` accelerates Apple Silicon. No OpenAI API key or per-minute fee is required.
+The first run may download model weights. See
+[`references/youtube-workflow.md`](references/youtube-workflow.md).
 
-## Настройка Telegram publisher
+## Make it sound like you — without a fake “voice score”
 
-Publisher нужен только для автоматической отправки. Создание черновиков, локальная расшифровка и ручная Telegram «Статья» работают без него.
+Give the agent 3–5 approved posts and ask it to draft a project-local voice profile. You
+review the observable rules: audience, rhythm, vocabulary, directness, humor, formatting,
+CTA, evidence habits, and anti-patterns. The profile stays editable.
+
+For objective guardrails only:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-cp .env.example .env
+python scripts/check_voice.py post-plain.md --profile style-check.json
 ```
 
-В `.env` локально указываются токен и ID тестового канала. Проверка без отправки:
+The checker names every triggered rule. It never claims to measure authenticity,
+personality, or writing quality. Start with
+[`assets/voice-profile.template.md`](assets/voice-profile.template.md) and
+[`assets/style-check.template.json`](assets/style-check.template.json).
+
+## One auditable folder per material
 
 ```bash
-python scripts/publish_rich.py assets/rich-post.example.html \
-  --photo cover=path/to/cover.jpg
+python scripts/init_material.py "launch interview"
 ```
 
-Тестовая отправка требует двух явных флагов:
+This creates:
+
+```text
+materials/launch-interview/
+├── source.md                 # origin, rights, raw material
+├── transcript.md             # timestamps and speaker labels
+├── evidence-map.md           # claim → source → confidence
+├── brief.md                  # audience, goal, CTA, constraints
+├── voice-profile-used.md     # profile version and examples
+├── post-plain.md             # compatible fallback
+├── post-rich.html            # Telegram Rich Message
+├── media/                    # explicit assets
+└── validation-report.md      # technical and human acceptance
+```
+
+The complete synthetic example is in
+[`examples/source-to-post`](examples/source-to-post).
+
+## Validate and preview — nothing is sent
 
 ```bash
-python scripts/publish_rich.py assets/rich-post.example.html \
-  --photo cover=path/to/cover.jpg \
-  --send \
-  --confirm-target=-1001234567890
+python scripts/validate_rich.py examples/source-to-post/post-rich.html
+python scripts/preview_rich.py examples/source-to-post/post-rich.html \
+  --out output/preview.html
 ```
 
-Боевой канал выбирается отдельным `--environment production` и тоже требует точного подтверждения target. Успешный тест никогда не считается разрешением на боевую публикацию.
+The validator targets Telegram Bot API 10.3 and rejects unsupported tags/attributes,
+event handlers, inline styles, unsafe URL schemes, malformed nesting, unsupported named
+entities, documented limit overflows, and media-ID mismatches. The local preview is
+explicitly approximate; Telegram Desktop and mobile remain authoritative.
 
-## Примеры запросов
+## Safe Telegram delivery
 
-```text
-Вот сырая мысль. Сделай из неё подробный Telegram-пост в моём tone of voice.
-Не сокращай важные аргументы, задай вопросы только по существенным пробелам.
+Create a dedicated bot with `@BotFather`, add it only to a private test channel first,
+and grant only **Post Messages**. Put secrets in a local `.env`; never paste them into an
+agent prompt or commit them.
+
+Dry run:
+
+```bash
+python scripts/publish_rich.py draft.html --photo cover=cover.jpg
+python scripts/publish_fallback.py post-plain.md --mode plain
 ```
 
-```text
-Вот голосовая. Расшифруй её локально без платного API, отдели тезис от повторов
-и подготовь две версии поста: обычную и rich. Ничего не отправляй.
+An actual test send requires two independent gates:
+
+```bash
+python scripts/publish_rich.py draft.html --photo cover=cover.jpg \
+  --send --confirm-target=-1001234567890
 ```
 
-```text
-Преврати эту статью в самостоятельный пост: сохрани ссылки, отдели идеи автора
-от моего комментария, не копируй исходник и добавь понятный CTA.
+Production additionally requires `--environment production`, but still cannot bypass
+`--send` or exact target confirmation. A successful test is never permission to publish
+to production. Full BotFather steps: [`references/botfather-setup.md`](references/botfather-setup.md).
+
+## Rich, when Rich earns its place
+
+Rich Messages can provide headings, checklists, tables, quotations, expandable details,
+footnotes, math, maps, documents, collages, and true swipe slideshows. Older clients may
+not render them, so the workflow always considers a normal post or album fallback.
+
+```html
+<h1>A decision readers can scan</h1>
+<aside><b>The key takeaway.</b></aside>
+<table bordered compact>
+  <tr><th>Option</th><th>Use when</th></tr>
+  <tr><td>Plain</td><td>Compatibility matters most</td></tr>
+  <tr><td>Rich</td><td>Structure improves understanding</td></tr>
+</table>
+<details><summary>Implementation notes</summary><p>Extra context.</p></details>
 ```
 
-```text
-Изучи YouTube-ролик, возьми оригинальное превью и субтитры, а если их нет —
-локально расшифруй аудио. Сделай подробный rich-пост и подготовь тест.
-```
+See [`references/formatting.md`](references/formatting.md) for the supported grammar.
 
-## Состав
+## Design principles
 
-- `SKILL.md` — маршрутизация и обязательные правила агента;
-- `references/onboarding.md` — первый запуск и подключение tone of voice;
-- `references/source-modes.md` — мысль, голос, статья, документ, видео и несколько источников;
-- `references/` — установка, BotFather, форматирование, YouTube-процесс и диагностика;
-- `scripts/transcribe_audio.py` — локальная транскрибация через `faster-whisper`;
-- `scripts/prepare_youtube.py` — превью, метаданные, субтитры и аудио через `yt-dlp`;
-- `scripts/validate_rich.py` — офлайн-проверка Rich HTML;
-- `scripts/publish_rich.py` — безопасный one-shot publisher;
-- `assets/` — пример rich-поста, контент-бриф и шаблон voice profile;
-- `tests/` — тесты критичных инвариантов без Telegram, моделей и API.
+1. **Meaning before formatting.** Rich blocks must earn their place.
+2. **Evidence before prose.** Claims, quotes, links, and timestamps stay traceable.
+3. **Local first.** Transcription, checks, and previews avoid paid APIs and unnecessary
+   uploads.
+4. **Progressive disclosure.** The agent reads only the references needed for the task.
+5. **Dry run by default.** Drafting is not publication; a test is not production approval.
+6. **Human authority.** Voice, rights, target, and final rendering remain human decisions.
 
-## Безопасность
+## Compatibility and honest limits
 
-Токены не надо присылать агенту сообщением: их вводят локально в `.env`. Локальная транскрибация не требует speech-to-text API-ключа. Если токен бота попал в чат, скриншот или commit, его нужно немедленно отозвать через BotFather и выпустить новый. Подробности: [SECURITY.md](SECURITY.md).
+- Rich Messages require current Telegram clients; prepare a fallback for broad audiences.
+- The validator mirrors documented Bot API 10.3 behavior but cannot replace the server.
+- Browser preview is approximate, not a Telegram emulator.
+- Speaker diarization is not bundled; it is a separate heavy pipeline with additional
+  model and licensing decisions.
+- The skill transforms public third-party material; it does not justify republishing a
+  full transcript or bypassing access controls.
 
-## Лицензия и авторство
+## Project map
 
-Проект распространяется по лицензии MIT. Уведомления о сторонних компонентах: [LICENSE](LICENSE) и [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- [`SKILL.md`](SKILL.md) — agent instructions and non-negotiable safety gates;
+- [`references/`](references) — onboarding, sources, installation, formatting, Telegram,
+  YouTube, troubleshooting, and end-to-end workflow;
+- [`scripts/`](scripts) — deterministic local tools;
+- [`assets/`](assets) — templates, sample Rich HTML, and visuals;
+- [`examples/source-to-post`](examples/source-to-post) — synthetic complete example;
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — components and trust boundaries;
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — development and contribution rules.
 
-<sub>Адаптация и расширение: Roman Sharafutdinov. Основано на MIT-проекте [seozavr/tg-rich-post](https://github.com/seozavr/tg-rich-post): исходная грамматика Rich Messages, минимальный aiogram-пример и результаты живого прогона.</sub>
+## Contributing and roadmap
+
+Bug reports, focused features, new synthetic examples, Telegram format updates, and
+cross-platform fixes are welcome. Please keep core tests offline and never use private
+materials as fixtures. Start with [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+Good next contributions include richer deterministic previews, opt-in diarization
+adapters, more source extractors, and real-world showcase materials whose authors have
+explicitly approved publication.
+
+## License and credit
+
+MIT. See [`LICENSE`](LICENSE), [`SECURITY.md`](SECURITY.md), and
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+<sub>Created and expanded by Roman Sharafutdinov. The Rich Message grammar and original
+minimal aiogram experiment were adapted from
+[seozavr/tg-rich-post](https://github.com/seozavr/tg-rich-post), MIT licensed.</sub>

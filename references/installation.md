@@ -70,32 +70,44 @@ Review changes before updating production automation.
 
 ## Python environment for the helper scripts
 
-From the installed skill folder:
+The editorial skill itself is plain Markdown. Helper scripts require Python 3.11 or
+newer. On an older macOS, `/usr/bin/python3` may still be 3.9 even when a newer Homebrew
+Python is installed. Check first:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-cp .env.example .env
+python3 --version
 ```
 
-Windows PowerShell activation:
+From the installed skill folder, inspect the plan using your 3.11+ interpreter. Replace
+`python3` with `python3.12`, for example, when needed:
+
+```bash
+python3 scripts/bootstrap.py --features all
+python3 scripts/bootstrap.py --features all --apply
+.venv/bin/python scripts/doctor.py
+```
+
+`bootstrap.py` creates an isolated environment. Add `--init-env` only when publisher
+configuration is needed; it copies `.env.example` only when `.env` does not exist and
+never overwrites an existing secret file. Select only what you need with `--features
+publisher`, `youtube`, `transcription`, or a comma-separated combination.
+
+Equivalent manual Windows PowerShell setup:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -r requirements.txt -r requirements-youtube.txt -r requirements-transcription.txt
 Copy-Item .env.example .env
 ```
 
 Do not install dependencies globally with administrator rights. Keep each bot or publisher in an isolated virtual environment.
 
-Install YouTube and free local transcription dependencies only when that workflow is needed:
+Optional Apple Silicon MLX backend:
 
 ```bash
-python -m pip install -r requirements-youtube.txt
+python -m pip install -r requirements-apple-silicon.txt
 ```
 
 No speech-to-text API key is required. The selected Whisper model downloads on first
@@ -110,6 +122,7 @@ python scripts/validate_rich.py assets/rich-post.example.html \
 python scripts/publish_rich.py --help
 python scripts/prepare_youtube.py --help
 python scripts/transcribe_audio.py --help
+python scripts/doctor.py
 ```
 
 The first command is offline. It should finish with `VALID` and must not require a bot token.

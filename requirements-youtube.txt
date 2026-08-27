@@ -1,2 +1,1 @@
-faster-whisper>=1.2.1,<2
 yt-dlp>=2026.7.4

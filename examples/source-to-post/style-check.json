@@ -1,0 +1,9 @@
+{
+  "max_paragraph_chars": 700,
+  "max_sentence_words": 34,
+  "max_emoji": 2,
+  "require_call_to_action": false,
+  "call_to_action_markers": [],
+  "banned_phrases": ["in today's fast-paced world", "game-changer"],
+  "required_phrases": ["lightest format"]
+}
