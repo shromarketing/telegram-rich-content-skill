@@ -92,11 +92,15 @@ Copy-Item .env.example .env
 
 Do not install dependencies globally with administrator rights. Keep each bot or publisher in an isolated virtual environment.
 
-Install YouTube and transcription dependencies only when that workflow is needed:
+Install YouTube and free local transcription dependencies only when that workflow is needed:
 
 ```bash
 python -m pip install -r requirements-youtube.txt
 ```
+
+No speech-to-text API key is required. The selected Whisper model downloads on first
+use, so reserve disk space and use a trusted network for that one-time download. Start
+with `small`; choose `large-v3` when final quality matters more than speed and memory.
 
 ## Verify discovery and scripts
 

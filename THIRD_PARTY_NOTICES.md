@@ -27,9 +27,13 @@ The optional YouTube workflow invokes `yt-dlp` as an external dependency. It is 
 - Source: https://github.com/yt-dlp/yt-dlp
 - License: The Unlicense; third-party components have their own licenses.
 
-## OpenAI Python SDK
+## faster-whisper
 
-The optional transcription helper uses the separately installed OpenAI Python SDK and the user's own API credentials. The SDK is not vendored into this repository.
+The optional local transcription helper uses the separately installed `faster-whisper` package. It is not vendored into this repository.
 
-- Source: https://github.com/openai/openai-python
-- License: Apache-2.0
+- Source: https://github.com/SYSTRAN/faster-whisper
+- License: MIT
+
+`faster-whisper` installs CTranslate2, PyAV, and other dependencies with their own
+licenses. Whisper model weights are downloaded separately on first use and remain
+subject to their respective model licenses.

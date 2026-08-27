@@ -12,3 +12,4 @@ output/
 cookies.txt
 cookies*.txt
 *.session
+:memory:.ses

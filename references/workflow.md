@@ -1,82 +1,65 @@
 # End-to-end workflow
 
-## 1. Establish the publishing brief
+## 1. Establish the editorial brief
 
-Capture:
+Capture what is known:
 
 - source material and permission to use it;
 - author, channel, audience, and desired action;
-- whether the user wants a draft, a test, or an actual production publication;
-- target length and whether the source may be condensed;
+- draft, private test, or production publication;
+- target depth and whether the source may be condensed;
 - required links, quotes, timestamps, credits, and media;
+- approved voice profile or examples;
 - availability of Telegram Premium and target-client compatibility.
 
-Do not infer publication permission from a request to draft or preview a post.
+Use `assets/content-brief.template.md` when a reusable record helps. Do not infer publication permission from a request to draft or preview a post.
 
-## 2. Choose the delivery mode
+## 2. Clarify only consequential gaps
 
-| Mode | Best for | Main limitation |
-|---|---|---|
-| Manual Article | occasional human-reviewed posts with Premium | manual action; Premium required |
-| Classic album | broad compatibility and 2–10 media items | 1024-character caption; no structured longread |
-| Rich Message | longreads, tables, details, footnotes, slideshows | older clients may show unsupported content |
+Ask the minimum needed when missing information could change facts, audience, first-person position, call to action, legal risk, or destination. Otherwise make a reasonable assumption, state it briefly, and produce a useful first version.
 
-If audience compatibility is unknown, prepare a small rich test and a classic fallback.
+If no tone of voice is configured, offer the onboarding in `onboarding.md`; do not block urgent work on it.
 
 ## 3. Build an evidence map
 
-Before prose, list:
+Before prose, list verified facts, exact quotes and positions, uncertain claims, timestamps, media rights, source links, and unresolved conflicts. For third-party material, write a transformative post and clearly separate the source author's ideas from the user's commentary.
 
-- verified facts;
-- direct quotes with exact source positions;
-- claims requiring cautious wording;
-- useful timestamps;
-- media rights and credits;
-- links to the original material;
-- unresolved gaps.
-
-For third-party videos, write a transformative summary. Do not reproduce a full copyrighted transcript or imply that the speaker endorsed the new post.
-
-## 4. Design the post
+## 4. Shape the copy
 
 A strong long-form structure is usually:
 
-1. outcome-oriented headline;
-2. short lead explaining why the material matters;
-3. source image or credited original thumbnail;
-4. core ideas grouped into sections;
+1. a specific, outcome-oriented hook;
+2. a short lead explaining why the material matters;
+3. source media or a credited original thumbnail when appropriate;
+4. core ideas grouped into readable sections;
 5. a table, checklist, aside, or `details` block only when it improves comprehension;
-6. timestamps or source links;
+6. examples, timestamps, or source links;
 7. one clear next action;
-8. footer with source and credits.
+8. a source and credit footer when needed.
 
-Use rich elements as information architecture, not decoration. Avoid empty headings, decorative tables, and collapsible blocks that hide the central point.
+Apply the approved voice profile to rhythm, vocabulary, degree of directness, formatting, humor, and CTA. Preserve factual meaning over stylistic consistency. Produce variants only when they support a real choice, such as different hooks or lengths.
 
-## 5. Create media
+## 5. Choose delivery mode
 
-- Prefer user-owned source media.
-- For YouTube, read `youtube-workflow.md`.
-- Use the platform's original thumbnail only when its use is appropriate and the post links back to the source.
-- For a frame capture, choose a readable, representative frame without subtitles cut off or faces distorted.
-- Keep aspect ratios suitable for Telegram previews.
+| Mode | Best for | Main limitation |
+|---|---|---|
+| Normal post | short, broadly compatible copy | limited structure |
+| Manual Article | occasional human-reviewed longreads with Premium | manual action; Premium required |
+| Classic album | broad compatibility and 2–10 media items | short caption; no structured longread |
+| Rich Message | longreads, tables, details, footnotes, slideshows | older clients may show unsupported content |
 
-## 6. Write and validate
+If compatibility is unknown, prepare a small rich test and a normal or album fallback.
 
-Start from `assets/rich-post.example.html` or create fresh Rich HTML.
+## 6. Create media, write, and validate
 
-```bash
-python scripts/validate_rich.py draft.html \
-  --media cover=cover.jpg
-```
-
-Then run the publisher without `--send`:
+Prefer user-owned source media. For YouTube, read `youtube-workflow.md`.
 
 ```bash
-python scripts/publish_rich.py draft.html \
-  --photo cover=cover.jpg
+python scripts/validate_rich.py draft.html --media cover=cover.jpg
+python scripts/publish_rich.py draft.html --photo cover=cover.jpg
 ```
 
-Resolve every error before a network action.
+Resolve every validation error before a network action.
 
 ## 7. Test in isolation
 
@@ -89,39 +72,19 @@ python scripts/publish_rich.py draft.html \
   --confirm-target=-1001234567890
 ```
 
-Check:
-
-- current Telegram Desktop;
-- current mobile Telegram;
-- an older client or a planned fallback;
-- notification and chat-list preview;
-- forwarding behavior;
-- all links and anchors;
-- media order and captions;
-- tables at narrow width;
-- collapsed and expanded `details` blocks.
+Check current desktop and mobile Telegram, notification preview, forwarding, links, media order, narrow tables, expanded details, and the planned fallback.
 
 ## 8. Production gate
 
-Immediately before production, show the user:
+Immediately before production, show the final text or test message, exact media, bot identity, exact destination, notification choice, and known compatibility limitations. Only then use `--environment production --send --confirm-target=...`.
 
-- final text or rendered test message;
-- exact media files or URLs;
-- bot identity;
-- exact destination;
-- whether notifications are enabled;
-- known compatibility limitations.
+## 9. Improve the editorial system
 
-Only then use `--environment production --send --confirm-target=...`.
+After the user approves a material, offer—not automatically perform—the following durable updates:
 
-## 9. Record the outcome
+- add the post as an approved voice example;
+- record a stable preferred phrase or banned cliché;
+- save a reusable structure for that channel;
+- note a verified source or recurring CTA.
 
-Keep only durable operational information:
-
-- source and verification date;
-- template/version used;
-- test result and client versions;
-- production message link or ID when publication was authorized;
-- known limitations.
-
-Never record tokens, API keys, cookies, or private source material in a decision log.
+Never store tokens, cookies, unpublished source content, sensitive personal inferences, or a hidden psychological profile in the editorial profile.

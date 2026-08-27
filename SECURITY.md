@@ -6,8 +6,11 @@ Keep these values only in a local `.env`:
 
 - Telegram bot token;
 - private channel IDs when their disclosure matters;
-- `OPENAI_API_KEY`;
 - cookies or authenticated browser exports.
+
+The bundled transcription path is local and does not require an OpenAI or other paid
+speech-to-text API key. Downloaded model files remain on the machine unless the user
+chooses a different model cache location.
 
 The repository ignores `.env`, cookies, local output, and virtual environments. Before every public push, inspect the staged diff and run a secret scan.
 

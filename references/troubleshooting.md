@@ -65,9 +65,30 @@ Do not loop indefinitely. Confirm the public page works, update `yt-dlp`, and tr
 
 Install `ffmpeg` and verify `ffmpeg -version`. The YouTube helper can retrieve thumbnails and metadata without it, but audio conversion and subtitle conversion may require it.
 
-## Transcription rejects a large file
+## First transcription downloads a model
 
-Install `ffmpeg`. The transcription helper automatically splits files above its upload threshold into smaller local chunks. If splitting fails, compress the audio or select only the relevant section.
+This is expected. `faster-whisper` downloads the selected model once and reuses its
+local cache. Use `--model-dir` to choose the cache or `--local-model-only` to prohibit
+downloads. The local workflow does not upload audio to a paid transcription API.
+
+## Transcription is too slow or runs out of memory
+
+Start with the `small` model. On CPU, try:
+
+```bash
+python scripts/transcribe_audio.py audio.mp3 --out transcript.txt \
+  --device cpu --compute-type int8
+```
+
+Use `large-v3` only when the machine has enough time and memory. On a supported NVIDIA
+setup, use `--device cuda --compute-type float16`. Apple Silicon users may choose the
+optional MLX path documented in `youtube-workflow.md`.
+
+## Transcription omits speech or mishandles names
+
+The built-in VAD removes silence and can occasionally be too aggressive. Retry a known
+problem file with `--no-vad`. Supply names and specialist vocabulary through
+`--initial-prompt`; verify uncertain names against the audio before quoting them.
 
 ## Flood control
 
