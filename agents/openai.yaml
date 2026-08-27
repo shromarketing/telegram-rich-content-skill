@@ -1,0 +1,6 @@
+interface:
+  display_name: "Telegram Rich Content"
+  short_description: "Rich-посты Telegram из текста и YouTube"
+  default_prompt: "Use $telegram-rich-content to turn this material into a safe Telegram rich post."
+policy:
+  allow_implicit_invocation: true
