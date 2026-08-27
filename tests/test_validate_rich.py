@@ -84,10 +84,15 @@ class ValidateRichTests(unittest.TestCase):
             '<table bordered compact><tr><th align="left">A</th>'
             '<td colspan="2">B</td></tr></table>'
             '<tg-button-row align="center"><tg-button type="url" '
-            'url="https://example.com">Open</tg-button></tg-button-row>'
+            'style="primary" url="https://example.com">Open</tg-button></tg-button-row>'
         )
         result = validate_rich(markup, [])
         self.assertTrue(result.ok, result.errors)
+
+    def test_inline_style_remains_rejected_on_normal_html(self) -> None:
+        result = validate_rich('<p style="color:red">Text</p>', [])
+        self.assertFalse(result.ok)
+        self.assertTrue(any("unsafe attribute" in error for error in result.errors))
 
 
 if __name__ == "__main__":

@@ -216,7 +216,7 @@ class RichHTMLMetrics(HTMLParser):
             if name in seen:
                 self.errors.append(f"duplicate attribute {name!r} on <{tag}>")
             seen.add(name)
-            if name.startswith("on") or name == "style":
+            if name.startswith("on") or (name == "style" and tag != "tg-button"):
                 self.errors.append(f"unsafe attribute {name!r} on <{tag}>")
             elif name not in allowed:
                 self.errors.append(f"unsupported attribute {name!r} on <{tag}>")
